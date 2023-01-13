@@ -5,4 +5,4 @@ name = "csharp"
 enabled = true
 
 [analyzers.meta]
-  sdk_version = "core-2.x"
+  sdk_version = "6.x"
