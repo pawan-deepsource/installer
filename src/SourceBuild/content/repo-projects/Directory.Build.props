@@ -14,7 +14,7 @@
     <MinimalConsoleLogOutput Condition="'$(MinimalConsoleLogOutput)' == ''">true</MinimalConsoleLogOutput>
     <RepoConsoleLogFile>$(LoggingDir)$(RepositoryName).log</RepoConsoleLogFile>
     <RedirectRepoOutputToLog Condition="'$(MinimalConsoleLogOutput)' == 'true'">&gt;&gt; $(RepoConsoleLogFile) 2&gt;&amp;1</RedirectRepoOutputToLog>
-    <IsStable Condition="'$(UseStableVersions)' == 'true'">true</IsStable>
+    <NetCurrent>net8.0</NetCurrent>
 
     <PackagesOutput>$(ProjectDirectory)artifacts/packages/$(Configuration)/NonShipping/</PackagesOutput>
 
@@ -22,6 +22,19 @@
       Repo specific semaphore path for incremental build
     -->
     <RepoCompletedSemaphorePath>$(CompletedSemaphorePath)$(RepositoryName)/</RepoCompletedSemaphorePath>
+
+    <!-- Paths to the version props files -->
+    <CurrentSourceBuiltPackageVersionPropsPath>$(IntermediatePath)PackageVersions.$(RepositoryName).Current.props</CurrentSourceBuiltPackageVersionPropsPath>
+    <PreviouslySourceBuiltPackageVersionPropsPath>$(IntermediatePath)PackageVersions.$(RepositoryName).Previous.props</PreviouslySourceBuiltPackageVersionPropsPath>
+    <SnapshotPackageVersionPropsPath>$(IntermediatePath)PackageVersions.$(RepositoryName).Snapshot.props</SnapshotPackageVersionPropsPath>
+    <PackageVersionPropsPath>$(IntermediatePath)PackageVersions.$(RepositoryName).props</PackageVersionPropsPath>
+    <PackageVersionPropsFlowType>AllPackages</PackageVersionPropsFlowType>
+
+    <EngCommonToolsShFile Condition="Exists('$(ProjectDirectory)eng/common/tools.sh')">$(ProjectDirectory)eng/common/tools.sh</EngCommonToolsShFile>
+    <EngCommonBuildShFile Condition="Exists('$(ProjectDirectory)eng/common/build.sh')">$(ProjectDirectory)eng/common/build.sh</EngCommonBuildShFile>
+    <GlobalJsonFile Condition="'$(GlobalJsonFile)' == '' and Exists('$(ProjectDirectory)global.json')">$(ProjectDirectory)global.json</GlobalJsonFile>
+    <NuGetConfigFile Condition="'$(NuGetConfigFile)' == '' and Exists('$(ProjectDirectory)NuGet.config')">$(ProjectDirectory)NuGet.config</NuGetConfigFile>
+    <NuGetConfigFile Condition="'$(NuGetConfigFile)' == '' and Exists('$(ProjectDirectory)NuGet.Config')">$(ProjectDirectory)NuGet.Config</NuGetConfigFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
@@ -62,7 +75,7 @@
     <EnvironmentVariables Include="_InitializeDotNetCli=$(DotNetCliToolDir)" />
     <EnvironmentVariables Include="_DotNetInstallDir=$(DotNetCliToolDir)" />
     <EnvironmentVariables Include="_InitializeToolset=$(SourceBuiltSdksDir)Microsoft.DotNet.Arcade.Sdk/tools/Build.proj" Condition="'$(UseBootstrapArcade)' != 'true'" />
-    <EnvironmentVariables Include="_OverrideArcadeInitializeBuildToolFramework=net7.0" />
+    <EnvironmentVariables Include="_OverrideArcadeInitializeBuildToolFramework=$(NetCurrent)" />
 
     <EnvironmentVariables Include="DotNetUseShippingVersions=true" />
 
@@ -98,6 +111,9 @@
     <EnvironmentVariables Include="DeterministicSourcePaths=false" Condition="'$(DeterministicBuildOptOut)' == 'true'" />
 
     <EnvironmentVariables Include="SourceRoot=$(ProjectDirectory)" />
+
+    <!-- https://github.com/dotnet/source-build/issues/3081 -->
+    <EnvironmentVariables Include="CheckEolTargetFramework=false" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(EnableExtraDebugging)' == 'true'">
@@ -156,5 +172,10 @@
     <ILSdkOverride Include="Microsoft.NET.Sdk.IL" Group="IL" />
     <MsBuildTraversalSdkOverride Include="Microsoft.Build.Traversal" Group="MSBUILD_TRAVERSAL" Version="2.0.2"/>
     <WindowsDesktopSdkOverride Include="Microsoft.Net.Sdk.WindowsDesktop" Group="WINDOWS_DESKTOP" Location="$(ToolsDir)EmptySdk"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <UseSourceBuiltSdkOverride Condition="'$(UseBootstrapArcade)' != 'true'" Include="@(ArcadeSdkOverride)" />
+    <UseSourceBuiltSdkOverride Condition="'$(UseBootstrapArcade)' == 'true'" Include="@(ArcadeBootstrapSdkOverride)" />
   </ItemGroup>
 </Project>

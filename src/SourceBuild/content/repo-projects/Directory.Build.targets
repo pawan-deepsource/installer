@@ -6,58 +6,16 @@
   </ItemGroup>
 
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="AddSourceToNuGetConfig" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="GetSourceBuiltNupkgCacheConflicts" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReadNuGetPackageInfos" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="RemoveInternetSourcesFromNuGetConfig" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceFeedsInNuGetConfig" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UpdateJson" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UpdateNuGetConfigPackageSourcesMappings" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ValidateUsageAgainstBaseline" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteBuildOutputProps" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageVersionsProps" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageUsageData" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteUsageReports" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteVersionsFile" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ZipFileExtractToDirectory" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFile" />
-
-  <!--
-    Central property to define that a repo doesn't implement any of the Repo API. If a repo adds an
-    implementation of a specific part of the Repo API, replace RepoApiImplemented in the repo's
-    props file with the properties below. When more API surface area is added, remove the
-    corresponding lines from the repo's props file. Once the entire API is implemented, the props
-    file is clean.
-  -->
-  <PropertyGroup>
-    <RepoApiImplemented Condition="'$(RepoApiImplemented)' == ''">true</RepoApiImplemented>
-    <EngCommonToolsShFile Condition="Exists('$(ProjectDirectory)/eng/common/tools.sh')">$(ProjectDirectory)/eng/common/tools.sh</EngCommonToolsShFile>
-    <EngCommonBuildShFile Condition="Exists('$(ProjectDirectory)/eng/common/build.sh')">$(ProjectDirectory)/eng/common/build.sh</EngCommonBuildShFile>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <DependencyVersionInputRepoApiImplemented Condition="'$(DependencyVersionInputRepoApiImplemented)' == ''">$(RepoApiImplemented)</DependencyVersionInputRepoApiImplemented>
-    <SourceOverrideRepoApiImplemented Condition="'$(SourceOverrideRepoApiImplemented)' == ''">$(RepoApiImplemented)</SourceOverrideRepoApiImplemented>
-    <OutputPlacementRepoApiImplemented Condition="'$(OutputPlacementRepoApiImplemented)' == ''">$(RepoApiImplemented)</OutputPlacementRepoApiImplemented>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(SourceOverrideRepoApiImplemented)' != 'true'">
-    <NuGetConfigFile Condition="'$(NuGetConfigFile)' == '' and Exists('$(ProjectDirectory)NuGet.config')">$(ProjectDirectory)NuGet.config</NuGetConfigFile>
-    <NuGetConfigFile Condition="'$(NuGetConfigFile)' == '' and Exists('$(ProjectDirectory)NuGet.Config')">$(ProjectDirectory)NuGet.Config</NuGetConfigFile>
-    <NuGetConfigFile Condition="'$(NuGetConfigFile)' == '' and Exists('$(ProjectDirectory)src\NuGet.config')">$(ProjectDirectory)src\NuGet.config</NuGetConfigFile>
-    <NuGetConfigFile Condition="'$(NuGetConfigFile)' == '' and Exists('$(ProjectDirectory)src\NuGet.Config')">$(ProjectDirectory)src\NuGet.Config</NuGetConfigFile>
-  </PropertyGroup>
-
-  <!-- Dependency version input arguments -->
-  <PropertyGroup Condition="'$(DependencyVersionInputRepoApiImplemented)' == 'true'">
-    <RepoApiArgs>$(RepoApiArgs) /p:DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)</RepoApiArgs>
-  </PropertyGroup>
-  <!-- Source override arguments -->
-  <PropertyGroup Condition="'$(SourceOverrideRepoApiImplemented)' == 'true'">
-    <RepoApiArgs>$(RepoApiArgs) /p:DotNetBuildOffline=true</RepoApiArgs>
-  </PropertyGroup>
-  <!-- Output placement arguments -->
-  <PropertyGroup Condition="'$(OutputPlacementRepoApiImplemented)' == 'true'">
-    <RepoApiArgs>$(RepoApiArgs) /p:DotNetOutputBlobFeedDir=$(SourceBuiltBlobFeedDir)</RepoApiArgs>
-  </PropertyGroup>
 
   <Target Name="BuildRepoReferences" Condition="'@(RepositoryReference)' != '' and '$(SkipRepoReferences)' != 'true'">
     <Message Importance="High" Text="Building dependencies [@(RepositoryReference)] needed by '$(RepositoryName)'." />
@@ -100,51 +58,19 @@
       NewText="$(NewText)" />
   </Target>
 
-
   <Target Name="UpdateBuildToolFramework"
           BeforeTargets="Build"
           Condition="'$(EngCommonToolsShFile)' != ''"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(RepoCompletedSemaphorePath)UpdateBuildToolFramework.complete" >
-    <!-- Use a relative find in NewText to avoid regex matches with parent directories.
-         See https://github.com/dotnet/source-build/issues/1914 for details. -->
-    <PropertyGroup>
-      <ArcadeSdkReplacementText>
-      logger_path=&quot;%24toolset_dir&quot;/%24%28cd &quot;$toolset_dir&quot; &amp;&amp; find . -name Microsoft.DotNet.Arcade.Sdk.dll \( -regex &apos;.*netcoreapp2.1.*&apos; -or -regex &apos;.*net7.0.*&apos; \) )
-      </ArcadeSdkReplacementText>
 
-      <ArcadeLoggingReplacementText>
-      logger_path=&quot;%24toolset_dir&quot;/%24%28cd &quot;$toolset_dir&quot; &amp;&amp; find . -name Microsoft.DotNet.ArcadeLogging.dll \( -regex &apos;.*netcoreapp2.1.*&apos; -or -regex &apos;.*net7.0.*&apos; \) )
-      </ArcadeLoggingReplacementText>
-
-      <LoggerPathReplacementText>
-      $(ArcadeLoggingReplacementText)
-      if [[ ! -f $logger_path ]]; then
-        $(ArcadeSdkReplacementText)
-      fi
-      </LoggerPathReplacementText>
-    </PropertyGroup>
-    <!-- Arcade has added a new ArcadeLogging library (see: https://github.com/dotnet/arcade/pull/6739)
-      This adds additional scenarios when modifying tools.sh to search for the logger_path.  Source-build
-      builds arcade after the change, so the logger is no longer found in Microsoft.DotNet.Arcade.Sdk,
-      rather, it has moved to Microsoft.DotNet.ArcadeLogging.
-      The scenarios are: -->
-     <!-- 1. Repo has old tools.sh - replace with new search for logger_path from updated tools.sh which looks for ArcadeLogging first,
-          but make the source-build search changes to find the right dll. -->
-    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
-                       OldText="local logger_path=&quot;$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll&quot;"
-                       NewText="$(LoggerPathReplacementText)" />
-    <!-- 2. Repo has updated tools.sh, replace 2 logger_path statements with source-build search equivalents to find the right dll -->
-    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
-                       OldText="local logger_path=&quot;$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.ArcadeLogging.dll&quot;"
-                       NewText="$(ArcadeLoggingReplacementText)" />
-    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
-                       OldText="logger_path=&quot;$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll&quot;"
-                       NewText="$(ArcadeSdkReplacementText)" />
-    <!-- 3. Repo has 3rd generation of tools.sh.  In this case, we set an override for _InitializeBuildToolFramework -->
+    <!-- Update the BuildToolFramework for repos that have not adopted the current version of Arcade-->
     <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
                        OldText="_InitializeBuildToolFramework=&quot;netcoreapp3.1&quot;"
-                       NewText="_InitializeBuildToolFramework=&quot;%24{_OverrideArcadeInitializeBuildToolFramework-netcoreapp3.1}&quot;" />
+                       NewText="_InitializeBuildToolFramework=&quot;$(NetCurrent)&quot;" />
+    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
+                       OldText="_InitializeBuildToolFramework=&quot;net7.0&quot;"
+                       NewText="_InitializeBuildToolFramework=&quot;$(NetCurrent)&quot;" />
 
     <!-- Temporary workaround for when the ci option is specified, non-zero exit are swallowed which prevents builds from failing within 
          the build process.  https://github.com/dotnet/source-build/issues/2307 -->
@@ -169,7 +95,6 @@
       <ExtraSourcesNuGetSourceName>ExtraSources</ExtraSourcesNuGetSourceName>
       <SourceBuildSources>$(PrebuiltNuGetSourceName);$(PreviouslySourceBuiltNuGetSourceName);$(ReferencePackagesNuGetSourceName);$(SourceBuiltNuGetSourceName)</SourceBuildSources>
       <SourceBuildSources Condition="'$(ExtraRestoreSourcePath)' != ''">$(SourceBuildSources);$(ExtraSourcesNuGetSourceName)</SourceBuildSources>
-      <SourceBuildSources Condition="'$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' != '' and '$(SetUpInternalTransportFeed)' == 'true'">$(SourceBuildSources);$(DotNet5InternalTransportNuGetSourceName)</SourceBuildSources>
     </PropertyGroup>
 
     <!-- Update the detected or manually specified NuGetConfigFile, but also allow multiple. -->
@@ -232,45 +157,86 @@
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)UpdateGlobalJsonVersions.complete" Overwrite="true" />
   </Target>
 
-  <Target Name="CreateBuildOutputProps"
+  <!-- Before a repository builds, set up the version property files that override the repo's defaults.
+       There are 3 files generated -->
+  <Target Name="CreateBuildInputProps"
           BeforeTargets="Build"
           Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(RepoCompletedSemaphorePath)CreateBuildOutputProps.complete">
-    <PropertyGroup>
-      <_PackageVersionPropsBackupPath>$(PackageVersionPropsPath).pre.$(RepositoryName).xml</_PackageVersionPropsBackupPath>
-    </PropertyGroup>
+          Outputs="$(RepoCompletedSemaphorePath)CreateBuildInputProps.complete">
 
     <ItemGroup>
-      <PreviouslySourceBuiltPackages Include="$(SourceBuiltPackagesPath)*.nupkg"
-                                      Exclude="$(SourceBuiltPackagesPath)*.symbols.nupkg" />
-      <_AdditionalAssetDirs Include="$(SourceBuiltToolsetDir)" Condition="Exists('$(SourceBuiltToolsetDir)')" />
+      <_CurrentSourceBuiltPackages Include="$(SourceBuiltPackagesPath)*.nupkg"
+                                   Exclude="$(SourceBuiltPackagesPath)*.symbols.nupkg" />
+      <_PreviouslyBuiltSourceBuiltPackages Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
+                                      
+      <_CurrentAdditionalAssetDirs Include="$(SourceBuiltToolsetDir)" Condition="Exists('$(SourceBuiltToolsetDir)')" />
     </ItemGroup>
 
-    <WriteBuildOutputProps NuGetPackages="@(PreviouslySourceBuiltPackages)"
-                           ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
-                           AdditionalAssetDirs="@(_AdditionalAssetDirs)"
-                           OutputPath="$(CurrentSourceBuiltPackageVersionPropsPath)" />
+    <Error Condition="'$(PackageVersionPropsFlowType)' != 'AllPackages' and '$(PackageVersionPropsFlowType)' != 'DependenciesOnly'"
+      Text="Invalid PackageVersionPropsFlowType '$(PackageVersionPropsFlowType)'. Must be 'AllPackages' or 'DependenciesOnly'." />
 
-    <WriteBuildOutputProps NuGetPackages="@(PreviouslySourceBuiltPackages)"
-                           IncludeCreationTimeProperty="true"
-                           OutputPath="$(_PackageVersionPropsBackupPath)" />
+    <PropertyGroup>
+      <_VersionDetailsXml Condition="'$(PackageVersionPropsFlowType)' == 'DependenciesOnly'">$(ProjectDirectory)/eng/Version.Details.xml</_VersionDetailsXml>
+    </PropertyGroup>
 
-    <Message Importance="High" Text="$(RepositoryName) using package version properties saved at $(_PackageVersionPropsBackupPath) " />
+    <!-- Write the build input properties, then save off a copy that will be used for generating usage reports later -->
+    <WritePackageVersionsProps NuGetPackages="@(_CurrentSourceBuiltPackages)"
+                               ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
+                               VersionPropsFlowType="$(PackageVersionPropsFlowType)"
+                               VersionDetails="$(_VersionDetailsXml)"
+                               AdditionalAssetDirs="@(_CurrentAdditionalAssetDirs)"
+                               OutputPath="$(CurrentSourceBuiltPackageVersionPropsPath)" />
 
-    <ReadNuGetPackageInfos PackagePaths="@(PreviouslySourceBuiltPackages)">
-      <Output TaskParameter="PackageInfoItems" ItemName="_PreviouslySourceBuiltPackageInfos" />
-    </ReadNuGetPackageInfos>
+    <!-- Create previously source-built inputs info -->
+    <WritePackageVersionsProps NuGetPackages="@(_PreviouslyBuiltSourceBuiltPackages)"
+                               VersionPropsFlowType="$(PackageVersionPropsFlowType)"
+                               VersionDetails="$(_VersionDetailsXml)"
+                               OutputPath="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
 
-    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CreateBuildOutputProps.complete" Overwrite="true" />
+    <!-- Write a full package version props (unfiltered) that will be used to track which repo creates a package.
+         Because not all repos implement the repo API (e.g. some are external), it's difficult to consistently gather
+         a list of packages from the output of each repo. This may be an area for improvement later.
+
+         Instead, we rely on the package version props file that is built up
+         before each build. If the full list of packages grows by package A, B and C between repo Y and Z, then Y produced
+         A B and C.
+
+         A key element of this algorith is that we must write the full package version props and not the filtered version. -->
+    <WritePackageVersionsProps NuGetPackages="@(_CurrentSourceBuiltPackages)"
+                               VersionPropsFlowType="AllPackages"
+                               OutputPath="$(SnapshotPackageVersionPropsPath)" />
+
+    <!-- Write a single file that contains imports for both the current and previously built packages -->
+    <PropertyGroup>
+      <PackageVersionsPropsContents>
+        <![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
+  <Import Project="$(CurrentSourceBuiltPackageVersionPropsPath)" />
+</Project>
+]]>
+      </PackageVersionsPropsContents>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(PackageVersionPropsPath)"
+                      Lines="$(PackageVersionsPropsContents)"
+                      Overwrite="true" />
+
+    <Message Importance="High" Text="$(RepositoryName) using package version properties saved at $(CurrentSourceBuiltPackageVersionPropsPath) and $(PreviouslySourceBuiltPackageVersionPropsPath)" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CreateBuildInputProps.complete" Overwrite="true" />
   </Target>
 
   <Target Name="Build"
           DependsOnTargets="BuildRepoReferences"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(RepoCompletedSemaphorePath)Build.complete">
+
+    <Exec Command="$(DOTNET_HOST_PATH) build-server shutdown" />
+
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Building $(ProjectBuildReason)" />
     <Message Importance="High" Text="Running command:" />
-    <Message Importance="High" Text="  $(BuildCommand) $(RepoApiArgs)" Condition="'$(BuildCommand)' != ''" />
+    <Message Importance="High" Text="  $(BuildCommand)" Condition="'$(BuildCommand)' != ''" />
     <Message Importance="High" Text="  Using custom build target" Condition="'$(BuildCommand)' == ''" />
     <Message Importance="High" Text="  Log: $(RepoConsoleLogFile)" />
     <Message Importance="High" Text="  With Environment Variables:" />
@@ -287,8 +253,8 @@
       <EnvironmentVariables Condition="'$(NUGET_PACKAGES)'!=''" Include="NUGET_PACKAGES=$(NUGET_PACKAGES)" />
     </ItemGroup>
     <PropertyGroup>
-      <FullCommand Condition="'$(LogVerbosityOptOut)' != 'true'">$(BuildCommand) /v:$(LogVerbosity) $(RepoApiArgs) $(RedirectRepoOutputToLog)</FullCommand>
-      <FullCommand Condition="'$(LogVerbosityOptOut)' == 'true'">$(BuildCommand) $(RepoApiArgs) $(RedirectRepoOutputToLog)</FullCommand>
+      <FullCommand Condition="'$(LogVerbosityOptOut)' != 'true'">$(BuildCommand) /v:$(LogVerbosity) $(RedirectRepoOutputToLog)</FullCommand>
+      <FullCommand Condition="'$(LogVerbosityOptOut)' == 'true'">$(BuildCommand) $(RedirectRepoOutputToLog)</FullCommand>
     </PropertyGroup>
     <Exec Command="$(FullCommand)"
           WorkingDirectory="$(ProjectDirectory)"
@@ -353,6 +319,13 @@
       <SourceBuiltNupkgFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
     </ItemGroup>
 
+    <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
+      <NonShippingPackageLists Include="$(SourceBuiltPackagesPath)extractArtifacts/**/$(NonShippingPackagesListPrefix)*" />
+    </ItemGroup>
+
+    <!-- Copy lists of NonShipping packages to prebuilt-report dir -->
+    <Copy SourceFiles="@(NonShippingPackageLists)" DestinationFolder="$(PackageReportDir)packagelists/" />
+
     <Move
       Condition="'@(SourceBuiltNupkgFiles)' != ''"
       SourceFiles="@(SourceBuiltNupkgFiles)"
@@ -389,7 +362,7 @@
 
   <Target Name="CopyPackage"
           AfterTargets="Package"
-          Condition="'$(OutputPlacementRepoApiImplemented)' != 'true' AND ('$(PackagesOutput)' != '' OR '@(PackagesOutputList)' != '')"
+          Condition="'$(PackagesOutput)' != '' OR '@(PackagesOutputList)' != ''"
           DependsOnTargets="GatherBuiltPackages"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(RepoCompletedSemaphorePath)CopyPackage.complete">
@@ -454,7 +427,7 @@
           AfterTargets="RemoveBuiltPackagesFromCache"
           Condition=" '$(CleanWhileBuilding)' == 'true' ">
 
-    <!-- Make a copy of the build logs & project.assets.json files-->
+    <!-- Make a copy of the build logs & project.assets.json files -->
     <PropertyGroup>
       <BuildLogsDir>$(ProjectDirectory)artifacts/buildLogs</BuildLogsDir>
       <BuildObjDir>$(ProjectDirectory)artifacts/buildObj</BuildObjDir>
@@ -547,7 +520,7 @@
     <ItemGroup>
       <_PackagesNotCreatedReason Include="^ There may have been a silent failure in the submodule build. To confirm, check the build log file for undetected errors that may have prevented package creation: $(RepoConsoleLogFile)" />
       <_PackagesNotCreatedReason Include="^ This error might be a false positive if $(RepositoryName) intentionally builds no nuget packages. If so, set the SkipEnsurePackagesCreated property to true in $(MSBuildProjectFullPath)" />
-      <_PackagesNotCreatedReason Include="^ The 'bin' directory might be dirty from a previous build and the package files already existed. If so, perform a clean build, or check which packages were already in 'bin' by opening $(_PackageVersionPropsBackupPath)" />
+      <_PackagesNotCreatedReason Include="^ The 'bin' directory might be dirty from a previous build and the package files already existed. If so, perform a clean build, or check which packages were already in 'bin' by opening $(CurrentSourceBuiltPackageVersionPropsPath)" />
       <_PackagesNotCreatedReason Include="^ The packages may have been written to an unexpected directory. For example, some repos used bin/ and changed to artifacts/ to match Arcade. Check PackagesOutput in $(MSBuildProjectFullPath) (currently '$(PackagesOutput)')" />
     </ItemGroup>
 
@@ -600,7 +573,7 @@
           Outputs="$(RepoCompletedSemaphorePath)WritePrebuiltUsageData.complete">
     <!-- Save the PVP snapshot of each build step to be evaluated while building the report. -->
     <ItemGroup>
-      <PackageVersionPropsSnapshotFiles Include="$(IntermediatePath)PackageVersions.props.pre.*.xml" />
+      <PackageVersionPropsSnapshotFiles Include="$(IntermediatePath)PackageVersions.*.Snapshot.props" />
     </ItemGroup>
     <Copy SourceFiles="@(PackageVersionPropsSnapshotFiles)" DestinationFolder="$(PackageReportDir)snapshots/" />
 
@@ -686,7 +659,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageVersionPropsSavedSnapshotFiles Include="$(PackageReportDir)snapshots/PackageVersions.props.pre.*.xml" />
+      <PackageVersionPropsSavedSnapshotFiles Include="$(PackageReportDir)snapshots/PackageVersions.*.Snapshot.props" />
     </ItemGroup>
 
     <WriteUsageReports DataFile="$(PackageReportDataFile)"

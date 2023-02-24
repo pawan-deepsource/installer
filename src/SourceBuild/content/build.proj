@@ -4,7 +4,6 @@
   <UsingTask AssemblyFile="$(LeakDetectionTasksAssembly)" TaskName="CheckForPoison" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteUsageBurndownData" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFile" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="DownloadFileSB" />
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
@@ -12,13 +11,6 @@
     <Message Text="Build Environment: $(Platform) $(Configuration) $(TargetOS) $(TargetRid)" />
 
     <MSBuild Projects="$(RepoProjectsDir)$(RootRepo).proj" Targets="Build" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
-  </Target>
-
-  <Target Name="RunRepoTests" DependsOnTargets="PrepareOutput;InitBuild">
-    <Message Text="Build Environment: $(Platform) $(Configuration) $(TargetOS) $(TargetRid)" />
-
-    <MSBuild Projects="$(RepoProjectsDir)$(RootRepoTests).proj" Targets="Build" Properties="PrepForTests=true;SkipEnsurePackagesCreated=true" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
-    <MSBuild Projects="$(RepoProjectsDir)$(RootRepoTests).proj" Targets="Build" Properties="RunTests=true;SkipEnsurePackagesCreated=true" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
   </Target>
 
   <Target Name="PrepareOutput">
@@ -70,10 +62,15 @@
 
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Checking @(FinalCliTarball) for poisoned files." />
 
+    <ItemGroup>
+      <NonShippingPackagesList Include="$(PackageListsDir)**/$(NonShippingPackagesListPrefix)*" />
+    </ItemGroup>
+
     <CheckForPoison FilesToCheck="@(FinalCliTarball)"
                     HashCatalogFilePath="$(PoisonReportDataFile)"
                     MarkerFileName="$(PoisonMarkerFile)"
-                    PoisonReportOutputFilePath="$(PoisonUsageReportFile)" />
+                    PoisonReportOutputFilePath="$(PoisonUsageReportFile)"
+                    NonShippingPackagesListFiles="@(NonShippingPackagesList)" />
 
     <WriteLinesToFile File="$(CompletedSemaphorePath)ReportPoisonUsage.complete" Overwrite="true" />
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Done checking for poison." />
@@ -92,11 +89,13 @@
   <Target Name="RunSmokeTest">
     <ItemGroup>
       <SdkTarballItem Include="$(SourceBuiltTarBallPath)**/dotnet-sdk*$(TarBallExtension)" />
+      <SourceBuiltArtifactsItem Include="$(SourceBuiltTarBallPath)**/Private.SourceBuilt.Artifacts.*$(TarBallExtension)" />
     </ItemGroup>
 
     <PropertyGroup>
       <CustomTestEnvVars Condition="'$(EnablePoison)' == 'true'">SMOKE_TESTS_POISON_REPORT_PATH=$(PoisonUsageReportFile);</CustomTestEnvVars>
       <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
+      <SourceBuiltArtifactsPath>%(SourceBuiltArtifactsItem.Identity)</SourceBuiltArtifactsPath>
       <SmokeTestConsoleVerbosity Condition="'$(SmokeTestConsoleVerbosity)' == ''">normal</SmokeTestConsoleVerbosity>
     </PropertyGroup>
 
@@ -104,6 +103,7 @@
     <Exec Command="$(DotnetToolCommand) test $(SmokeTestsDir) --logger:trx --logger:'console;verbosity=$(SmokeTestConsoleVerbosity)' -c $(Configuration)"
           EnvironmentVariables="
             SMOKE_TESTS_SDK_TARBALL_PATH=$(SdkTarballPath);
+            SMOKE_TESTS_SOURCEBUILT_ARTIFACTS_PATH=$(SourceBuiltArtifactsPath);
             SMOKE_TESTS_TARGET_RID=$(TargetRid);
             SMOKE_TESTS_PORTABLE_RID=$(PortableRid);
             SMOKE_TESTS_CUSTOM_PACKAGES_PATH=$(CustomSourceBuiltPackagesPath);
@@ -119,7 +119,7 @@
 
   <Target Name="CheckIfCreateSmokeTestPrereqsExistToPack">
     <PropertyGroup>
-      <SmokeTestsArtifactsDir>$(SmokeTestsDir)bin/$(Configuration)/net7.0/</SmokeTestsArtifactsDir>
+      <SmokeTestsArtifactsDir>$(SmokeTestsDir)bin/$(Configuration)/net8.0/</SmokeTestsArtifactsDir>
       <SmokeTestsPackagesDir>$(SmokeTestsArtifactsDir)packages/</SmokeTestsPackagesDir>
     </PropertyGroup>
 
@@ -133,7 +133,7 @@
   <Target Name="CreateCreateSmokeTestPrereqsTarballIfPrereqsExist"
           Condition="'@(SmokeTestsPrereqs->Count())' != '0'">
     <PropertyGroup>
-      <SmokeTestPrereqsTarballName>$(OutputPath)dotnet-smoke-test-prereqs.$(installerOutputPackageVersion).tar.gz</SmokeTestPrereqsTarballName>
+      <SmokeTestPrereqsTarballName>$(OutputPath)dotnet-smoke-test-prereqs.$(installerOutputPackageVersion).$(TargetRid).tar.gz</SmokeTestPrereqsTarballName>
       <SmokeTestsPrereqPackagesDir>$(SmokeTestsArtifactsDir)prereq-packages/</SmokeTestsPrereqPackagesDir>
     </PropertyGroup>
 
@@ -189,7 +189,7 @@
   <Target Name="CreatePrebuiltsTarballIfPrebuiltsExist"
           Condition="'@(PrebuiltFile->Count())' != '0'">
     <PropertyGroup>
-      <TarballFilePath>$(OutputPath)$(SourceBuiltPrebuiltsTarballName).$(installerOutputPackageVersion).$(BuildArchitecture).tar.gz</TarballFilePath>
+      <TarballFilePath>$(OutputPath)$(SourceBuiltPrebuiltsTarballName).$(installerOutputPackageVersion).$(TargetRid).tar.gz</TarballFilePath>
       <TarballWorkingDir>$(ResultingPrebuiltPackagesDir)</TarballWorkingDir>
     </PropertyGroup>
 

@@ -12,9 +12,6 @@
     <BuildCommandArgs>$(BuildCommandArgs) --sourcebuild</BuildCommandArgs>
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
-    <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>
-    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
-    <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
   </PropertyGroup>
 
@@ -23,11 +20,6 @@
     <RepositoryReference Include="msbuild" /> 
     <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="xliff-tasks" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
-    <EnvironmentVariables Include="CheckEolTargetFramework=false" />
   </ItemGroup>
 
   <Target Name="SetArcadeSdkDir"

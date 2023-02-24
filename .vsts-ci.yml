@@ -10,19 +10,6 @@ trigger:
     - internal/release/6.*
     - internal/release/7.*
 
-resources:
-  repositories:
-  - repository: vmr
-    type: github
-    name: dotnet/dotnet
-    endpoint: dotnet
-
-parameters:
-- name: vmrBranch
-  displayName: dotnet/dotnet branch to push to
-  type: string
-  default: $(Build.SourceBranchName)
-
 variables:
 - name: _PublishUsingPipelines
   value: false
@@ -50,6 +37,8 @@ variables:
       /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
       /p:dotnetbuilds-internal-container-read-token-base64=$(dotnetbuilds-internal-container-read-token-base64)
 
+- template: /eng/common/templates/variables/pool-providers.yml
+
 stages:
 - stage: Build
   jobs:
@@ -57,10 +46,10 @@ stages:
   - job: Publish_Build_Configuration
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
-        name: NetCore-Public
+        name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals windows.vs2022preview.amd64.open
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        name: NetCore1ESPool-Internal
+        name: $(DncEngInternalBuildPool)
         demands: ImageOverride -equals windows.vs2022preview.amd64
     steps:
     - publish: $(Build.SourcesDirectory)\eng\buildConfiguration
@@ -360,25 +349,6 @@ stages:
 
   - template: /eng/common/templates/jobs/source-build.yml
 
-- ${{ if and(eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:
-  - stage: Synchronize_VMR
-    displayName: Synchronize VMR
-    dependsOn: []
-    jobs:
-    - template: eng/pipelines/templates/jobs/vmr-synchronization.yml
-      parameters:
-        vmrBranch: ${{ parameters.vmrBranch }}
-
-# In case the VMR Build stage needs to be temporarily disabled, please make sure that
-# the VMR synchronization step is run to validate that the PR can be merged and later
-# synchronized into the VMR without problems.
-# You can do this by allowing the Synchronize_VMR stage from above in PRs.
-- ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-  - template: eng/pipelines/templates/stages/vmr-build.yml
-    parameters:
-      vmrBranch: ${{ parameters.vmrBranch }}
-      isBuiltFromVmr: false
-
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - stage: Publish
     dependsOn:
@@ -390,5 +360,5 @@ stages:
         publishAssetsImmediately: true
         pool:
           ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-            name: NetCore1ESPool-Internal
+            name: $(DncEngInternalBuildPool)
             demands: ImageOverride -equals windows.vs2022.amd64

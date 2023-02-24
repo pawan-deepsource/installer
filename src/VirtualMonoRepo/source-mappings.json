@@ -60,8 +60,13 @@
             "exclude": [
                 "src/submodules/MessagePack-CSharp/**/*.dll",
                 "**/samples/**/jquery-validation-unobtrusive/.bower.json",
-                "**/samples/**/jquery-validation-unobtrusive/*.js"
+                "**/samples/**/jquery-validation-unobtrusive/*.js",
+                "src/SignalR/clients/java/signalr/gradle/wrapper/gradle-wrapper.jar"
             ]
+        },
+        {
+            "name": "cecil",
+            "defaultRemote": "https://github.com/dotnet/cecil"
         },
         {
             "name": "command-line-api",
@@ -74,6 +79,10 @@
         {
             "name": "diagnostics",
             "defaultRemote": "https://github.com/dotnet/diagnostics"
+        },
+        {
+            "name": "emsdk",
+            "defaultRemote": "https://github.com/dotnet/emsdk"
         },
         {
             "name": "format",
@@ -89,16 +98,6 @@
             "exclude": [
                 // We don't need the tarball content in the VMR again, it's already copied in the root
                 "src/SourceBuild/content/**/*"
-            ]
-        },
-        {
-            "name": "linker",
-            "defaultRemote": "https://github.com/dotnet/linker",
-            "exclude": [
-                "external/cecil/**/*.dll",
-                "external/cecil/**/*.exe",
-                "external/cecil/**/*.pdb",
-                "external/cecil/**/*.mdb"
             ]
         },
         {
