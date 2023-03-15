@@ -15,9 +15,13 @@
   <ItemGroup>
     <!-- These packages will be replaced with ms-built packages downloaded from official package feeds-->
     <PackageDownload Include="Microsoft.Aspnetcore.App.Runtime.linux-x64" Version="[$(MicrosoftAspNetCoreAppRuntimeVersion)]" />
+    <PackageDownload Include="Microsoft.AspNetCore.App.Runtime.linux-musl-x64" Version="[$(MicrosoftAspNetCoreAppRuntimeVersion)]" />
     <PackageDownload Include="Microsoft.NETCore.App.Crossgen2.linux-x64" Version="[$(MicrosoftNETCoreAppCrossgen2Version)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Crossgen2.linux-musl-x64" Version="[$(MicrosoftNETCoreAppCrossgen2Version)]" />
     <PackageDownload Include="Microsoft.NETCore.App.Host.linux-x64" Version="[$(MicrosoftNETCoreAppHostPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Host.linux-musl-x64" Version="[$(MicrosoftNETCoreAppHostPackageVersion)]" />
     <PackageDownload Include="Microsoft.NETCore.App.Runtime.linux-x64" Version="[$(MicrosoftNETCoreAppRuntimeVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.linux-musl-x64" Version="[$(MicrosoftNETCoreAppRuntimeVersion)]" />
     <PackageDownload Include="Microsoft.NET.HostModel" Version="[$(MicrosoftNETHostModelVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.IL" Version="[$(MicrosoftNETSdkILVersion)]" />
     <PackageDownload Include="Microsoft.NETCore.ILAsm" Version="[$(MicrosoftNETCoreILAsmVersion)]" />
@@ -78,7 +82,7 @@
       Properties="SourcePath=$(RestorePackagesPath);DestinationPath=$(UnpackedTarPath);PackageName=%(PackageDownload.Identity);PackageVersion=%(PackageDownload.Version)" />
 
     <!-- override PVP with bootstrap-override package versions -->
-    <Message Text="  Overriding previously-source-built package versions with $(BootstrapOverrideVersionsProps)" Importance="High" />
+    <Message Text="  Overriding previously-source-built package versions with $(BootstrapOverrideVersionsProps)" Importance="High" Condition="Exists('$(BootstrapOverrideVersionsProps)')" />
     <ReadLinesFromFile File="$(UnpackedTarPath)/PackageVersions.props">
       <Output TaskParameter="Lines" ItemName="OriginalPackageVersionLines" />
     </ReadLinesFromFile>
@@ -94,10 +98,12 @@
     <WriteLinesToFile File="$(UnpackedTarPath)/PackageVersions.props"
                       Lines="@(OriginalPackageVersionLines)"
                       Overwrite="true"
+                      Condition="Exists('$(BootstrapOverrideVersionsProps)')"
     />
     <WriteLinesToFile File="$(UnpackedTarPath)/PackageVersions.props"
                       Lines="@(BootstrapPackageVersionLines)"
                       Overwrite="false"
+                      Condition="Exists('$(BootstrapOverrideVersionsProps)')"
     />
 
     <!-- Repack tarball with new bootstrap name -->
