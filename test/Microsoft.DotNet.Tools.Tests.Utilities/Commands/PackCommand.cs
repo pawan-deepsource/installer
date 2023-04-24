@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -18,61 +18,31 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
         private string OutputOption
         {
-            get
-            {
-                return _outputDirectory == string.Empty ?
-                                           "" :
-                                           $"-o \"{_outputDirectory}\"";
-            }
+            get => _outputDirectory == string.Empty ? "" : $"-o \"{_outputDirectory}\"";
         }
         private string BuildBasePathOption
         {
-            get
-            {
-                return _buildBasePath == string.Empty ?
-                                           "" :
-                                           $"-b \"{_buildBasePath}\"";
-            }
+            get => _buildBasePath == string.Empty ? "" : $"-b \"{_buildBasePath}\"";
         }
 
         private string TempOutputOption
         {
-            get
-            {
-                return _tempOutputDirectory == string.Empty ?
-                                           "" :
-                                           $"-t {_tempOutputDirectory}";
-            }
+            get => _tempOutputDirectory == string.Empty ? "" : $"-t {_tempOutputDirectory}";
         }
 
         private string ConfigurationOption
         {
-            get
-            {
-                return _configuration == string.Empty ?
-                                           "" :
-                                           $"-c {_configuration}";
-            }
+            get => _configuration == string.Empty ? "" : $"-c {_configuration}";
         }
 
         private string VersionSuffixOption
         {
-            get
-            {
-                return _versionSuffix == string.Empty ?
-                                           "" :
-                                           $"--version-suffix {_versionSuffix}";
-            }
+            get => _versionSuffix == string.Empty ? "" : $"--version-suffix {_versionSuffix}";
         }
 
         private string ServiceableOption
         {
-            get
-            {
-                return _serviceable ?
-                                $"--serviceable" :
-                                "";
-            }
+            get => _serviceable ? $"--serviceable" : "";
         }
 
         public PackCommand WithConfiguration(string configuration)
