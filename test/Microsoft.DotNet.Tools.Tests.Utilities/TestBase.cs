@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -36,10 +36,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
         protected static string RepoRoot
         {
-            get
-            {
-                return RepoDirectoriesProvider.RepoRoot;
-            }
+            get => RepoDirectoriesProvider.RepoRoot;
         }
 
         public static TestAssets TestAssets

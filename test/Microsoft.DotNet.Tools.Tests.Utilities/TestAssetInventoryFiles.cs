@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -28,10 +28,7 @@ namespace Microsoft.DotNet.TestFramework
                 return _source;
             }
 
-            private set
-            {
-                _source = value;
-            }
+            private set => _source = value;
         }
 
         public FileInfo Restore
@@ -43,10 +40,7 @@ namespace Microsoft.DotNet.TestFramework
                 return _restore;
             }
 
-            private set
-            {
-                _restore = value;
-            }
+            private set => _restore = value;
         }
 
         public FileInfo Build
@@ -58,10 +52,7 @@ namespace Microsoft.DotNet.TestFramework
                 return _build;
             }
 
-            private set
-            {
-                _build = value;
-            }
+            private set => _build = value;
         }
 
         public TestAssetInventoryFiles(DirectoryInfo inventoryFileDirectory)
@@ -75,15 +66,12 @@ namespace Microsoft.DotNet.TestFramework
 
         public IEnumerable<FileInfo> AllInventoryFiles
         {
-            get
-            {
-                return new List<FileInfo>
-                {
-                    Source,
-                    Restore,
-                    Build
-                };
-            }
+            get => new List<FileInfo>
+{
+    Source,
+    Restore,
+    Build
+};
         }
     }
 }

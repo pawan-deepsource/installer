@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.Build
 
         protected override MessageImportance StandardOutputLoggingImportance
         {
-            get { return MessageImportance.High; } // or else the output doesn't get logged by default
+            get => MessageImportance.High; // or else the output doesn't get logged by default
         }
 
         protected override string GenerateFullPathToTool()

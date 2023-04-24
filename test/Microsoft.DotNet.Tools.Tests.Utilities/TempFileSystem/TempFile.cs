@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
  
         public string Path
         {
-            get { return _path; }
+            get => _path;
         }
  
         public TempFile WriteAllText(string content, Encoding encoding)

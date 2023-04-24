@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System.Diagnostics;
 
@@ -41,12 +41,12 @@ namespace Microsoft.DotNet.Cli.Build
 
         protected override string ToolName
         {
-            get { return $"dotnet{Constants.ExeSuffix}"; }
+            get => $"dotnet{Constants.ExeSuffix}";
         }
 
         protected override MessageImportance StandardOutputLoggingImportance
         {
-            get { return MessageImportance.High; } // or else the output doesn't get logged by default
+            get => MessageImportance.High; // or else the output doesn't get logged by default
         }
 
         protected override string GenerateFullPathToTool()

@@ -85,19 +85,19 @@ namespace Microsoft.DotNet.Build.Tasks
 
         protected override string ToolName
         {
-            get { return "crossgen2"; }
+            get => "crossgen2";
         }
 
         protected override MessageImportance StandardOutputLoggingImportance
         {
             // Default is low, but we want to see output at normal verbosity.
-            get { return MessageImportance.Normal; }
+            get => MessageImportance.Normal;
         }
 
         protected override MessageImportance StandardErrorLoggingImportance
         {
             // This turns stderr messages into msbuild errors below.
-            get { return MessageImportance.High; }
+            get => MessageImportance.High;
         }
 
         protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)

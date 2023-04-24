@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
  
         public string Path
         {
-            get { return _path; }
+            get => _path;
         }
  
         public DirectoryInfo DirectoryInfo => new DirectoryInfo(Path);
