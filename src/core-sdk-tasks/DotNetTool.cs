@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli.Build
 {
     public abstract class DotNetTool : ToolTask
     {
-        public DotNetTool()
+        protected DotNetTool()
         {
         }
 
