@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -340,7 +340,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
         {
             Debug.Assert(!string.IsNullOrEmpty(root));
 
-            char c = root[root.Length - 1];
+            char c = root[^1];
             if (!IsDirectorySeparator(c) && c != VolumeSeparatorChar)
             {
                 return root + DirectorySeparatorStr + relativePath;
@@ -351,7 +351,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
         internal static string RemoveTrailingDirectorySeparator(string path)
         {
-            if (path.Length > 0 && IsDirectorySeparator(path[path.Length - 1]))
+            if (path.Length > 0 && IsDirectorySeparator(path[^1]))
             {
                 return path.Substring(0, path.Length - 1);
             }
