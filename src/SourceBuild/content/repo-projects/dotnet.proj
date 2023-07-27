@@ -3,6 +3,12 @@
 
   <PropertyGroup>
     <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
+
+    <!--
+      The default PackageVersionPropsFlowType behavior (DependenciesOnly) triggers logic that looks for a Version.Details.xml file.
+      Setting the type to AllPackages will skip that logic.
+    -->
+    <PackageVersionPropsFlowType>AllPackages</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <!-- This project file serves a couple of purpose.
@@ -13,14 +19,13 @@
   <ItemGroup>
     <!-- Toolsets -->
     <RepositoryReference Include="source-build-reference-packages" />
-    <RepositoryReference Include="sourcelink" />
     <RepositoryReference Include="arcade" />
 
     <!-- Product Repos -->
     <RepositoryReference Include="command-line-api" />
+    <RepositoryReference Include="sourcelink" />
     <RepositoryReference Include="diagnostics" />
     <RepositoryReference Include="emsdk" />
-    <RepositoryReference Include="razor" />
     <RepositoryReference Include="xliff-tasks" />
     <RepositoryReference Include="cecil" />
     <RepositoryReference Include="symreader" />
@@ -31,6 +36,7 @@
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="roslyn-analyzers" />
     <RepositoryReference Include="aspnetcore" />
+    <RepositoryReference Include="razor" />
     <RepositoryReference Include="deployment-tools" />
     <RepositoryReference Include="format" />
     <RepositoryReference Include="nuget-client" />

@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Security.AccessControl;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -23,7 +24,6 @@ public class OmniSharpTests : SmokeTests
 
     [SkippableTheory(Config.ExcludeOmniSharpEnv, skipOnTrue: true)]
     [InlineData(DotNetTemplate.BlazorWasm)]
-    [InlineData(DotNetTemplate.BlazorServer)]
     [InlineData(DotNetTemplate.ClassLib)]
     [InlineData(DotNetTemplate.Console)]
     [InlineData(DotNetTemplate.MSTest)]
@@ -48,7 +48,7 @@ public class OmniSharpTests : SmokeTests
             OutputHelper,
             logOutput: true,
             millisecondTimeout: 5000,
-            configure: (process) => DotNetHelper.ConfigureProcess(process, projectDirectory, setPath: true));
+            configureCallback: (process) => DotNetHelper.ConfigureProcess(process, projectDirectory, setPath: true));
 
         Assert.NotEqual(0, executeResult.Process.ExitCode);
         Assert.DoesNotContain("ERROR", executeResult.StdOut);
@@ -65,7 +65,11 @@ public class OmniSharpTests : SmokeTests
             await client.DownloadFileAsync(omniSharpTarballUrl, omniSharpTarballFile, OutputHelper);
 
             Directory.CreateDirectory(OmniSharpDirectory);
-            ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"xzf {omniSharpTarballFile} -C {OmniSharpDirectory}", OutputHelper);
+            Utilities.ExtractTarball(omniSharpTarballFile, OmniSharpDirectory, OutputHelper);
+            ExecuteHelper.ExecuteProcessValidateExitCode("chmod", $"+x {OmniSharpDirectory}/run", OutputHelper);
+            
+            // Ensure the run script is executable (see https://github.com/OmniSharp/omnisharp-roslyn/issues/2547)
+            File.SetUnixFileMode($"{OmniSharpDirectory}/run", UnixFileMode.UserRead | UnixFileMode.UserExecute);
         }
     }
 }

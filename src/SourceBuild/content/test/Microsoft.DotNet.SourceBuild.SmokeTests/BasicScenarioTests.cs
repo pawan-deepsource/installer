@@ -23,13 +23,18 @@ public class BasicScenarioTests : SmokeTests
     [MemberData(nameof(GetScenarioObjects))]
     public void VerifyScenario(TestScenario scenario) => scenario.Execute(DotNetHelper);
 
-    private static IEnumerable<object[]> GetScenarioObjects() => GetScenarios().Select(scenario => new object[] { scenario });
+    public static IEnumerable<object[]> GetScenarioObjects() => GetScenarios().Select(scenario => new object[] { scenario });
 
-    private static IEnumerable<TestScenario> GetScenarios()
+    public static IEnumerable<TestScenario> GetScenarios()
     {
+        // Since this has to be a static method, we don't have access to XUnit's output helper. So we use our own version as a placeholder.
+        DotNetHelper helper = new(new DebugTestOutputHelper());
+
         foreach (DotNetLanguage language in Enum.GetValues<DotNetLanguage>())
         {
-            yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.Console,  DotNetActions.Build | DotNetActions.Run | DotNetActions.PublishComplex | DotNetActions.PublishR2R);
+            yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.Console,
+                // R2R is not supported on Mono (see https://github.com/dotnet/runtime/issues/88419#issuecomment-1623762676)
+                DotNetActions.Build | DotNetActions.Run | DotNetActions.PublishComplex | (helper.IsMonoRuntime ? DotNetActions.None : DotNetActions.PublishR2R));
             yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.ClassLib, DotNetActions.Build | DotNetActions.Publish);
             yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.XUnit,    DotNetActions.Test);
             yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.NUnit,    DotNetActions.Test);

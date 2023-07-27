@@ -47,14 +47,13 @@ parameters:
 - name: buildFromArchive
   type: boolean
 
-# Some distros like CentOS Stream 9 use OpenSSL 3.0 which disables SHA1 signing.
-# This option overrides that default configuration and enables it. See https://github.com/dotnet/installer/pull/15289
-- name: overrideDistroDisablingSha1
+# Use the previous version's SDK to build the current one
+- name: withPreviousSDK
   type: boolean
   default: false
 
-# Use the previous version's SDK to build the current one
-- name: withPreviousSDK
+- name: useMonoRuntime
+  displayName: True when build output uses the mono runtime
   type: boolean
   default: false
 
@@ -183,11 +182,6 @@ jobs:
         echo "##vso[task.setvariable variable=additionalBuildArgs]--with-sdk /vmr/.dotnet"
       fi
 
-      if [[ '${{ parameters.buildFromArchive }}' == 'True' ]]; then
-        customPrepArgs="$customPrepArgs --source-repository https://github.com/dotnet/dotnet"
-        customPrepArgs="$customPrepArgs --source-version $(git -C "${{ parameters.vmrPath }}" rev-parse HEAD)"
-      fi
-
       docker run --rm -v "$(sourcesPath):/vmr" -w /vmr ${{ parameters.container }} ./prep.sh $customPrepArgs
     displayName: Prep the Build
 
@@ -204,13 +198,17 @@ jobs:
         customRunArgs="$customRunArgs --network none"
       fi
 
-      # See https://github.com/dotnet/source-build/issues/3202
-      if [[ '${{ parameters.overrideDistroDisablingSha1 }}' == 'True' ]]; then
-        customRunArgs="$customRunArgs -e OPENSSL_ENABLE_SHA1_SIGNATURES=1"
-      fi
-
       if [[ '${{ parameters.enablePoison }}' == 'True' ]]; then
         customBuildArgs="$customBuildArgs --poison"
+      fi
+
+      if [[ '${{ parameters.buildFromArchive }}' == 'True' ]]; then
+        customBuildArgs="$customBuildArgs --source-repository https://github.com/dotnet/dotnet"
+        customBuildArgs="$customBuildArgs --source-version $(git -C "${{ parameters.vmrPath }}" rev-parse HEAD)"
+      fi
+
+      if [[ '${{ parameters.useMonoRuntime }}' == 'True' ]]; then
+        customBuildArgs="$customBuildArgs --use-mono-runtime"
       fi
 
       docker run --rm -v "$(sourcesPath):/vmr" -w /vmr $customRunArgs ${{ parameters.container }} ./build.sh --clean-while-building $(additionalBuildArgs) $customBuildArgs
@@ -225,7 +223,6 @@ jobs:
 
       if [[ '${{ parameters.enablePoison }}' == 'True' ]]; then
         poisonArg='--poison'
-        dockerEnvArgs+=" -e SMOKE_TESTS_WARN_POISON_DIFFS=true"
       fi
 
       docker run --rm $dockerVolumeArgs -w /vmr $dockerEnvArgs ${{ parameters.container }} ./build.sh $poisonArg --run-smoke-test $(additionalBuildArgs) -- -p:SmokeTestConsoleVerbosity=detailed

@@ -237,7 +237,7 @@ stages:
       parameters:
         agentOs: Linux
         jobName: Build_Linux_Portable_Deb_Release_x64
-        container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04-debpkg'
+        container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg'
         buildConfiguration: Release
         buildArchitecture: x64
         # Do not publish zips and tarballs. The linux-x64 binaries are
@@ -254,7 +254,7 @@ stages:
         buildArchitecture: x64
         # Do not publish zips and tarballs. The linux-x64 binaries are
         # already published by Build_LinuxPortable_Release_x64
-        additionalBuildParameters: '/p:PublishBinariesAndBadge=false'
+        additionalBuildParameters: '/p:PublishBinariesAndBadge=false /p:IsRPMBasedDistro=true'
         linuxPortable: true
         runTests: false
     - template: eng/build.yml
@@ -267,7 +267,7 @@ stages:
         runtimeIdentifier: 'linux-arm64'
         # Do not publish zips and tarballs. The linux-x64 binaries are
         # already published by Build_LinuxPortable_Release_x64
-        additionalBuildParameters: '/p:PublishBinariesAndBadge=false /p:CLIBUILD_SKIP_TESTS=true'
+        additionalBuildParameters: '/p:PublishBinariesAndBadge=false /p:CLIBUILD_SKIP_TESTS=true  /p:IsRPMBasedDistro=true'
         linuxPortable: true
         runTests: false
     - template: eng/build.yml

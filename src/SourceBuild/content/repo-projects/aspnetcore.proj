@@ -23,11 +23,11 @@
     <BuildCommand>$(ProjectDirectory)\eng\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
-
-    <!-- CA1512 - Use 'ArgumentOutOfRangeException.ThrowIfEqual'
-                  Requires https://github.com/dotnet/aspnetcore/issues/47673 -->
-    <RepoNoWarns>CA1512</RepoNoWarns>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EnvironmentVariables Include="warn_as_error=false" />
+  </ItemGroup>
 
   <ItemGroup>
     <!--
@@ -39,6 +39,7 @@
     -->
     <ExtraPackageVersionPropsPackageInfo Include="Analyzer_MicrosoftCodeAnalysisCSharpVersion" Version="%24(MicrosoftCodeAnalysisCSharpVersion)" />
     <ExtraPackageVersionPropsPackageInfo Include="Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion" Version="%24(MicrosoftCodeAnalysisCSharpWorkspacesVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_LatestVS" Version="%24(MicrosoftCodeAnalysisCommonVersion)" />
   </ItemGroup>
 
   <ItemGroup>

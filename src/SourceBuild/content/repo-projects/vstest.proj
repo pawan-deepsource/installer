@@ -5,7 +5,6 @@
     <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:SemanticVersioningV1=true</BuildCommandArgs>
     <BuildCommand>$(ProjectDirectory)\eng\common\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
-
     <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
   </PropertyGroup>
 

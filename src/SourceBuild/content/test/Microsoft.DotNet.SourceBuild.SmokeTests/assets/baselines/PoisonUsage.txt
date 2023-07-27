@@ -1,14 +1,11 @@
 <PrebuiltLeakReport>
-  <File Path="Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Collections.Immutable.dll">
+  <File Path="dotnet-format.x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.AnalyzerUtilities.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Reflection.Metadata.dll">
+  <File Path="dotnet-sdk-x.y.z-banana-rid.tar/sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.AnalyzerUtilities.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="runtime.banana-rid.Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Collections.Immutable.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="runtime.banana-rid.Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Reflection.Metadata.dll">
+  <File Path="dotnet-sdk-x.y.z-banana-rid.tar/sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.AnalyzerUtilities.dll">
     <Type>AssemblyAttribute</Type>
   </File>
 </PrebuiltLeakReport>
